@@ -42,3 +42,9 @@ Hay que tener cuidado al intentar paralelizar la parte del algoritmo en donde se
 |          600,000         |             2.6405            |            1.05115            |            0.797415            |            0.842342            |
 |          800,000         |             2.7614            |            1.74864            |             1.21176            |             1.14588            |
 |         1,000,000        |             3.9947            |            1.58837            |             1.62874            |             1.21397            |
+
+<img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/3422a80e-f430-4760-9717-e83c133a3230 alt="Parallel results" width="600" height="400">
+
+## Speed Up
+
+Tenemos que la versión paralela proporciono un buen resultado de speed up para los casos con hilos mayor a uno.
