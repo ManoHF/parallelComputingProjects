@@ -45,11 +45,11 @@ Hay que tener cuidado al intentar paralelizar la parte del algoritmo en donde se
 
 <img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/6aa83638-a58f-4040-8b95-6ff12cdc12ea alt="Parallel results" width="600" height="400">
 
+
 ## Speed Up
 
 Tenemos que la versión paralela proporciono un buen resultado de speed up para los casos con hilos mayor a uno. El caso de uno se debe al overhead que causa el setup de la paralelización para, al final, solo usar un único hilo.
 
-<img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/d1fc5275-e528-4027-a99a-834f22a43586 alt="Parallel results" width="600" height="400">
-
+<img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/8b834def-faf6-48fc-9c11-343aff610491 alt="Parallel results" width="600" height="400">
 
 
