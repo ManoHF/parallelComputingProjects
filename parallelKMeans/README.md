@@ -32,3 +32,13 @@ En el caso de la función `same_centroids()` (comparar los arreglos pasados y pr
 Hay que tener cuidado al intentar paralelizar la parte del algoritmo en donde se le asigna el centroide más cercano a cada punto. En esta sección se calcula la distancia entre el punto y cada centroide, por lo tanto es necesario tener el valor mínimo de distancia para hacer las comparaciones correctas. Dadas estas restricciones se decide usar un for paralelo en el ciclo más exterior para que los hilos se dividan el trabajo de cada punto, lo cual incluye la comparacion con cada centroide de respectiva dimensión.
 
 ## Parallel K-Means Result
+
+|   **number_of_points**   |    **exec_time (1 thread)**   |    **exec_time (8 thread)**   |    **exec_time (16 thread)**   |    **exec_time (32 thread)**   |
+|:------------------------:|:-----------------------------:|:-----------------------------:|:------------------------------:|:------------------------------:|
+|          100,000         |             0.3284            |            0.22724            |            0.133924            |            0.108792            |
+|          200,000         |             0.6187            |            0.33197            |            0.243697            |             0.17367            |
+|          300,000         |             1.1952            |            0.46382            |            0.382082            |            0.515608            |
+|          400,000         |             1.6696            |            0.80666            |            0.551755            |            0.543077            |
+|          600,000         |             2.6405            |            1.05115            |            0.797415            |            0.842342            |
+|          800,000         |             2.7614            |            1.74864            |             1.21176            |             1.14588            |
+|         1,000,000        |             3.9947            |            1.58837            |             1.62874            |             1.21397            |
