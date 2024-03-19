@@ -2,6 +2,15 @@
 
 El proyecto involucra la implementación del algoritmo K-Means de manera serial y paralela. El código debe ser diseñado de tal forma que acepte un archivo CSV que contendrá los puntos sujetos a ser clasificados en distintos clusters. Posteriormente creará un nuevo archivo CSV con los puntos y su respectivo centroide. Es necesario medir el tiempo de ejecución del algoritmo serial y paralelo para obtener el *speed up* obtenido mediante OpenMP. Con fines a obtener resultados más precisos, se realizarán 10 iteraciones para cada cantidad de puntos y hilos según sea el caso.
 
+Características del equipo usado:
+* 13th Gen Intel Core i7
+* Base speed: 2.20 GHz
+* Cores: 12
+* Logical processors: 16
+* L1 cache: 1.1 MB
+* L2 cache: 9.0 MB
+* L3 cache: 18.0 MB
+
 ## Serial K-Means Result
 
 Resultados de ejecución de la versión serial del algoritmo:
