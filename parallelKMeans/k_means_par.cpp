@@ -29,7 +29,7 @@ int main() {
 
     for (std::string points : num_puntos) {
 
-        std::string input_filename = points + "_data.csv";
+        std::string input_filename = "./inputFiles/" + points + "_data.csv";
         std::string output_filename = points + "_results.csv";
         float total = 0.0f;
 
