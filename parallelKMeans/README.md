@@ -57,7 +57,7 @@ Hay que tener cuidado al intentar paralelizar la parte del algoritmo en donde se
 
 ## Speed Up
 
-Tenemos que la versión paralela proporciono un buen resultado de speed up para los casos con hilos mayor a uno. El caso de uno se debe al overhead que causa el setup de la paralelización para, al final, solo usar un único hilo.
+Tenemos que la versión paralela proporcionó un buen resultado de speed up para los casos con hilos mayor a uno. El caso de uno se debe al overhead que causa el setup de la paralelización para, al final, solo usar un único hilo. Además, cuando se utiliza una mayor cantidad de hilos a los disponibles se puede observar un comportamiento extraño. Sin embargo, para 8 y 16 hilos se obtiene el speed up deseado.
 
 <img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/8b834def-faf6-48fc-9c11-343aff610491 alt="Parallel results" width="600" height="400">
 
