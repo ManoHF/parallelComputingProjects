@@ -24,7 +24,7 @@ int main() {
     double** data;
     int data_size = 0;
 
-    std::cout << "Serial K-Means \n";
+    std::cout << "Parallelized K-Means \n";
     int num_iter = 10;
 
     for (std::string points : num_puntos) {
