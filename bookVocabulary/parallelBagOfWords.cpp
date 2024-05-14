@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    if (argc < 2) { // No se han proporcionado libros
+    if (argc < 2) {
         if (rank == 0) {
             std::cout << "Por favor, proporcione al menos un nombre de archivo de libro como argumento." << std::endl;
         }
@@ -33,19 +33,19 @@ int main(int argc, char* argv[]) {
 
     int nBooks = argc - 1;
 
-    // Iniciar medición del tiempo
+    // Start of time measurement
     auto start = std::chrono::high_resolution_clock::now();
 
     std::map<std::string, int> local_count;
     std::set<std::string> local_vocabulary;
 
-    // Cada proceso maneja un libro si hay suficientes libros
+    // Each process handles one book if there are enough
     if (rank < nBooks) {
         std::string filename = std::string("./books/") + argv[rank + 1] + ".txt";
         read_csv(filename, local_count, local_vocabulary);
     }
 
-    // Recopilar vocabularios locales en el proceso raíz
+    // Gather local vocabularies on the root process
     std::string localVocabString = serialize_set(local_vocabulary);
     int localVocabSize = localVocabString.size();
     std::vector<int> allVocabSizes(size);
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
     MPI_Gatherv(localVocabString.data(), localVocabSize, MPI_CHAR, allVocabStrings.data(), allVocabSizes.data(), displs.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
-    // El proceso raíz agrega vocabularios
+    // Root process adds all vocabularies
     std::set<std::string> global_vocabulary;
     if (rank == 0) {
         std::istringstream iss(std::string(allVocabStrings.data(), totalVocabSize));
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Difundir vocabulario global a todos los procesos
+    // Global vocabulary is broadcasted to all processes
     std::string globalVocabString;
     if (rank == 0) {
         globalVocabString = serialize_set(global_vocabulary);
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
         deserialize_set(globalVocabString, global_vocabulary);
     }
 
-    // Recopilar conteos locales en el proceso raíz
+    // Gather all local counts on root process
     std::string localCountString = serialize_map(local_count);
     int localCountSize = localCountString.size();
     std::vector<int> allCountSizes(size);
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 
     MPI_Gatherv(localCountString.data(), localCountSize, MPI_CHAR, allCountStrings.data(), allCountSizes.data(), countDispls.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
-    // El proceso raíz agrega los conteos de palabras
+    // Root process adds all word counts
     std::vector<std::map<std::string, int>> all_counts(size);
     if (rank == 0) {
         std::istringstream iss(std::string(allCountStrings.data(), totalCountSize));
@@ -125,7 +125,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Medición final del tiempo
+    // End of time measument
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
 
