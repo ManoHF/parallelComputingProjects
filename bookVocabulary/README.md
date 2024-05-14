@@ -33,4 +33,4 @@ De manera gráfica:
 
 Podemos observar que se logró el speed up deseado al llegar a un mínimo de cuatro libros.
 
-<img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/8cf61628-8e08-4007-8949-88bdd507cf95 alt="Parallel results" width="600" height="400">
+<img src=https://github.com/ManoHF/parallelComputingProjects/assets/70402438/7d07f4f5-d5a7-45d9-9fc6-c82cee2de2e7 alt="Parallel results" width="600" height="400">
