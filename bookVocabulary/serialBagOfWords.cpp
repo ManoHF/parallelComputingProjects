@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // Iniciar la medición del tiempo
+    // Start of time measurement
     auto start = std::chrono::high_resolution_clock::now();
 
     int nBooks = argc - 1;
@@ -29,34 +29,30 @@ int main(int argc, char* argv[]) {
         std::string name = argv[i];
         path = "./books/" + name + ".txt";
 
-        auto start = std::chrono::high_resolution_clock::now();
-
         read_csv(path, counts[i - 1], vocabulary);
-
-        auto end = std::chrono::high_resolution_clock::now(); 
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        total += (float)duration.count()/1000000;
     }
 
-    // Finalizar la medición del tiempo
+    // End of time measurement
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
 
     std::cout << "Tiempo total de procesamiento (sin escritura): " << duration.count() << " segundos" << std::endl;
 
-    // Escribir el resultado en un archivo
+    // Write the results into a csv file
     std::string out_file = "bag_of_words_serial.csv";
-
-    total = total / (float)nBooks;
-    std::cout << "Total time (" << nBooks << " books): " << total << "\n";
-
-    std::string out_file = "bag_of_words.txt";
-
     write_bag_of_words(out_file, counts, vocabulary);
 
     return 0;
 }
 
+/**
+ * Function that reads a book in csv format and stores all its words in a set and their count on a map
+ *
+ * @param filename name of the file to be read
+ * @param count map where the count for each word will be stored
+ * @param vocabulary set with the words present in all books
+ *
+ **/
 void read_csv(const std::string &filename, std::map<std::string, int> &count, std::set<std::string> &vocabulary) {
     std::ifstream file(filename);
     std::string word;
@@ -71,6 +67,14 @@ void read_csv(const std::string &filename, std::map<std::string, int> &count, st
     }
 }
 
+/**
+ * Function that writes the counts of words present in each book given the complete vocabulary in a csv format
+ *
+ * @param filename name of the file where the result will be stored
+ * @param counts vector of maps that contains the counts of words for each book given
+ * @param vocabulary set with the words present in all books
+ *
+ **/
 void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary) {
     std::ofstream file(filename);
 
