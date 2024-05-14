@@ -6,3 +6,14 @@
 [Proyecto 2: Paralelizar vocabulario de libros](https://github.com/ManoHF/parallelComputingProjects/tree/main/bookVocabulary)
 
 * Uso de OpenMP para paralelizar este algoritmo y evaluar desempeño con distinto número de hilos
+
+## Equipo usado para medición de tiempos
+
+Características del equipo usado:
+* 13th Gen Intel Core i7
+* Base speed: 2.20 GHz
+* Cores: 12
+* Logical processors: 16
+* L1 cache: 1.1 MB
+* L2 cache: 9.0 MB
+* L3 cache: 18.0 MB
