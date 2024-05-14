@@ -4,9 +4,10 @@
 #include <set>
 #include <fstream>
 #include <vector>
+#include <chrono>
 
 void read_csv(const std::string &filename, std::map<std::string, int> &count, std::set<std::string> &vocabulary);
-void write_bag_of_words(const std::string& filename, std::vector<std::map<std::string, int>> &counts, std::set<std::string> vocabulary);
+void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary);
 
 int main(int argc, char* argv[]) {
 
@@ -14,6 +15,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Please include the names of the files to read";
         return -1;
     }
+
+    // Iniciar la medición del tiempo
+    auto start = std::chrono::high_resolution_clock::now();
 
     int nBooks = argc - 1;
     std::vector<std::map<std::string, int>> counts(nBooks);
@@ -27,8 +31,16 @@ int main(int argc, char* argv[]) {
         read_csv(path, counts[i - 1], vocabulary);
     }
 
-    std::string out_file = "bag_of_words.txt";
+    // Finalizar la medición del tiempo
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+
+    std::cout << "Tiempo total de procesamiento (sin escritura): " << duration.count() << " segundos" << std::endl;
+
+    // Escribir el resultado en un archivo
+    std::string out_file = "bag_of_words_serial.csv";
     write_bag_of_words(out_file, counts, vocabulary);
+
     return 0;
 }
 
@@ -46,10 +58,10 @@ void read_csv(const std::string &filename, std::map<std::string, int> &count, st
     }
 }
 
-void write_bag_of_words(const std::string& filename, std::vector<std::map<std::string, int>> &counts, std::set<std::string> vocabulary) {
+void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary) {
     std::ofstream file(filename);
 
-    for (std::string elem : vocabulary) {
+    for (const std::string& elem : vocabulary) {
         file << elem << ",";
     }
     file << "\n";
