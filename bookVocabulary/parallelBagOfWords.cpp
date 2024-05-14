@@ -9,91 +9,12 @@
 #include <chrono>
 #include <numeric>
 
-// Lee un archivo CSV y cuenta las palabras
-// filename: nombre del archivo CSV
-// count: map donde se almacenan las cuentas de palabras
-// vocabulary: set donde se almacenan las palabras únicas
-void read_csv(const std::string &filename, std::map<std::string, int> &count, std::set<std::string> &vocabulary) {
-    std::ifstream file(filename);
-    std::string word;
-
-    while (std::getline(file, word, ',')) {
-        if (count.find(word) == count.end()) {
-            count[word] = 0;
-        }
-        count[word]++;
-        vocabulary.insert(word);
-    }
-}
-
-// Escribe el bag of words en un archivo CSV
-// filename: nombre del archivo de salida
-// counts: vector de maps que contienen las cuentas de palabras de cada libro
-// vocabulary: set que contiene todas las palabras únicas
-void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary) {
-    std::ofstream file(filename);
-
-    for (const std::string& elem : vocabulary) {
-        file << elem << ",";
-    }
-    file << "\n";
-
-    for (const auto &count_map : counts) {
-        for (const std::string &elem : vocabulary) {
-            if (count_map.find(elem) != count_map.end()) {
-                file << count_map.at(elem) << ",";
-            } else {
-                file << "0" << ",";
-            }
-        }
-        file << "\n";
-    }
-}
-
-// Serializa un set a una cadena
-// Convierte un set de palabras en una sola cadena, donde las palabras están separadas por espacios.
-// Esto facilita el envío del set completo a través de MPI en una sola operación de comunicación.
-std::string serialize_set(const std::set<std::string> &s) {
-    std::ostringstream oss;
-    for (const auto &word : s) {
-        oss << word << " ";
-    }
-    return oss.str();
-}
-
-// Deserializa una cadena a un set
-// Convierte una cadena de palabras separadas por espacios de vuelta a un set de palabras.
-// Esto es necesario después de recibir la cadena serializada a través de MPI para reconstruir el set original.
-void deserialize_set(const std::string &s, std::set<std::string> &set) {
-    std::istringstream iss(s);
-    std::string word;
-    while (iss >> word) {
-        set.insert(word);
-    }
-}
-
-// Serializa un map a una cadena
-// Convierte un map de palabras y sus cuentas en una sola cadena, donde cada par palabra-cuenta está separado por espacios.
-// Esto facilita el envío del map completo a través de MPI en una sola operación de comunicación.
-std::string serialize_map(const std::map<std::string, int> &m) {
-    std::ostringstream oss;
-    for (const auto &pair : m) {
-        oss << pair.first << " " << pair.second << " ";
-    }
-    return oss.str();
-}
-
-// Deserializa una cadena a un map
-// Convierte una cadena de pares palabra-cuenta separados por espacios de vuelta a un map de palabras y sus cuentas.
-// Esto es necesario después de recibir la cadena serializada a través de MPI para reconstruir el map original.
-void deserialize_map(const std::string &s, std::map<std::string, int> &m) {
-    std::istringstream iss(s);
-    std::string key;
-    int value;
-    while (iss >> key >> value) {
-        m[key] = value;
-    }
-}
+void read_csv(const std::string &filename, std::map<std::string, int> &count, std::set<std::string> &vocabulary);
+void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary);
+std::string serialize_set(const std::set<std::string> &s);
+void deserialize_set(const std::string &s, std::set<std::string> &set);
+std::string serialize_map(const std::map<std::string, int> &m);
+void deserialize_map(const std::string &s, std::map<std::string, int> &m);
 
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
@@ -216,4 +137,118 @@ int main(int argc, char* argv[]) {
 
     MPI_Finalize();
     return 0;
+}
+
+/**
+ * Function that reads a book in csv format and stores all its words in a set and their count on a map
+ *
+ * @param filename name of the file to be read
+ * @param count map where the count for each word will be stored
+ * @param vocabulary set with the words present in all books
+ *
+ **/
+void read_csv(const std::string &filename, std::map<std::string, int> &count, std::set<std::string> &vocabulary) {
+    std::ifstream file(filename);
+    std::string word;
+
+    while (std::getline(file, word, ',')) {
+        if (count.find(word) == count.end()) {
+            count[word] = 0;
+        }
+        count[word]++;
+        vocabulary.insert(word);
+    }
+}
+
+/**
+ * Function that writes the counts of words present in each book given the complete vocabulary in a csv format
+ *
+ * @param filename name of the file where the result will be stored
+ * @param counts vector of maps that contains the counts of words for each book given
+ * @param vocabulary set with the words present in all books
+ *
+ **/
+void write_bag_of_words(const std::string& filename, const std::vector<std::map<std::string, int>> &counts, const std::set<std::string>& vocabulary) {
+    std::ofstream file(filename);
+
+    for (const std::string& elem : vocabulary) {
+        file << elem << ",";
+    }
+    file << "\n";
+
+    for (const auto &count_map : counts) {
+        for (const std::string &elem : vocabulary) {
+            if (count_map.find(elem) != count_map.end()) {
+                file << count_map.at(elem) << ",";
+            } else {
+                file << "0" << ",";
+            }
+        }
+        file << "\n";
+    }
+}
+
+/**
+ * Function that turns a sets of strings into a single string where all the words are divided by white spaces.
+ * Then, this string can be sent through MPI in a single communication operation.
+ *
+ * @param s set of strings
+ *
+ * @return string containing all the words in the set
+ **/
+std::string serialize_set(const std::set<std::string> &s) {
+    std::ostringstream oss;
+    for (const auto &word : s) {
+        oss << word << " ";
+    }
+    return oss.str();
+}
+
+/**
+ * Function that turns a string of words separated by white spaces into a set in order to have the
+ * original set rebuilt for further processing.
+ *
+ * @param s serialized set as a string
+ * @param set set where the words will be stored
+ *
+ **/
+void deserialize_set(const std::string &s, std::set<std::string> &set) {
+    std::istringstream iss(s);
+    std::string word;
+    while (iss >> word) {
+        set.insert(word);
+    }
+}
+
+/**
+ * Function that turns a map of string keys and integer values where each key-value is separated by white spaces
+ * Then, this string can be sent through MPI in a single communication operation.
+ * 
+ * @param s map with strings as keys and ints as values
+ *
+ * @return string containing words and their respective counts
+ **/
+std::string serialize_map(const std::map<std::string, int> &m) {
+    std::ostringstream oss;
+    for (const auto &pair : m) {
+        oss << pair.first << " " << pair.second << " ";
+    }
+    return oss.str();
+}
+
+/**
+ * Function that turns a string of words and counts separated by white spaces into a map in order to have the
+ * original map rebuilt for further processing.
+ *
+ * @param s serialized map as a string
+ * @param set map where the words will be stored
+ *
+ **/
+void deserialize_map(const std::string &s, std::map<std::string, int> &m) {
+    std::istringstream iss(s);
+    std::string key;
+    int value;
+    while (iss >> key >> value) {
+        m[key] = value;
+    }
 }
