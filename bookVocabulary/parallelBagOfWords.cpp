@@ -32,32 +32,29 @@ int main(int argc, char* argv[]) {
     }
 
     int nBooks = argc - 1;
-
-    // Start of time measurement
     auto start = std::chrono::high_resolution_clock::now();
 
     std::map<std::string, int> local_count;
     std::set<std::string> local_vocabulary;
+    std::set<std::string> global_vocabulary;
 
-    // Each process handles one book if there are enough
     if (rank < nBooks) {
         std::string filename = std::string("./books/") + argv[rank + 1] + ".txt";
         read_csv(filename, local_count, local_vocabulary);
     }
 
-    // Gather local vocabularies on the root process
     std::string localVocabString = serialize_set(local_vocabulary);
     int localVocabSize = localVocabString.size();
     std::vector<int> allVocabSizes(size);
+    std::vector<char> allVocabStrings;
+    std::vector<int> displs(size);
+
     MPI_Gather(&localVocabSize, 1, MPI_INT, allVocabSizes.data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    std::vector<char> allVocabStrings;
-    int totalVocabSize = 0;
-    std::vector<int> displs(size, 0);
-
     if (rank == 0) {
-        totalVocabSize = std::accumulate(allVocabSizes.begin(), allVocabSizes.end(), 0);
+        int totalVocabSize = std::accumulate(allVocabSizes.begin(), allVocabSizes.end(), 0);
         allVocabStrings.resize(totalVocabSize);
+        displs[0] = 0;
         for (int i = 1; i < size; ++i) {
             displs[i] = displs[i - 1] + allVocabSizes[i - 1];
         }
@@ -65,48 +62,28 @@ int main(int argc, char* argv[]) {
 
     MPI_Gatherv(localVocabString.data(), localVocabSize, MPI_CHAR, allVocabStrings.data(), allVocabSizes.data(), displs.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
-    // Root process adds all vocabularies
-    std::set<std::string> global_vocabulary;
     if (rank == 0) {
-        std::istringstream iss(std::string(allVocabStrings.data(), totalVocabSize));
+        std::istringstream iss(std::string(allVocabStrings.begin(), allVocabStrings.end()));
         std::string word;
         while (iss >> word) {
             global_vocabulary.insert(word);
         }
     }
 
-    // Global vocabulary is broadcasted to all processes
-    std::string globalVocabString;
-    if (rank == 0) {
-        globalVocabString = serialize_set(global_vocabulary);
-    }
-
-    int globalVocabSize = globalVocabString.size();
-    MPI_Bcast(&globalVocabSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
-    if (rank != 0) {
-        globalVocabString.resize(globalVocabSize);
-    }
-
-    MPI_Bcast(&globalVocabString[0], globalVocabSize, MPI_CHAR, 0, MPI_COMM_WORLD);
-
-    if (rank != 0) {
-        deserialize_set(globalVocabString, global_vocabulary);
-    }
-
-    // Gather all local counts on root process
-    std::string localCountString = serialize_map(local_count);
+    std::string localCountString = serialize_map(local_count) + "|"; // Ensure each map ends with a delimiter
     int localCountSize = localCountString.size();
     std::vector<int> allCountSizes(size);
+
     MPI_Gather(&localCountSize, 1, MPI_INT, allCountSizes.data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     std::vector<char> allCountStrings;
     int totalCountSize = 0;
-    std::vector<int> countDispls(size, 0);
+    std::vector<int> countDispls(size);  // Declaration of countDispls
 
     if (rank == 0) {
         totalCountSize = std::accumulate(allCountSizes.begin(), allCountSizes.end(), 0);
         allCountStrings.resize(totalCountSize);
+        countDispls[0] = 0;
         for (int i = 1; i < size; ++i) {
             countDispls[i] = countDispls[i - 1] + allCountSizes[i - 1];
         }
@@ -114,22 +91,24 @@ int main(int argc, char* argv[]) {
 
     MPI_Gatherv(localCountString.data(), localCountSize, MPI_CHAR, allCountStrings.data(), allCountSizes.data(), countDispls.data(), MPI_CHAR, 0, MPI_COMM_WORLD);
 
-    // Root process adds all word counts
     std::vector<std::map<std::string, int>> all_counts(size);
     if (rank == 0) {
-        std::istringstream iss(std::string(allCountStrings.data(), totalCountSize));
+        std::istringstream iss(std::string(allCountStrings.begin(), allCountStrings.end()));
+        std::string serializedMap;
         for (int i = 0; i < size; ++i) {
-            std::string serializedMap;
-            std::getline(iss, serializedMap, '|');
-            deserialize_map(serializedMap, all_counts[i]);
+            if (!std::getline(iss, serializedMap, '|')) {
+                std::cerr << "Error: Failed to extract serialized map for process " << i << std::endl;
+                continue;
+            }
+            if (!serializedMap.empty()) {
+                deserialize_map(serializedMap, all_counts[i]);
+            }
         }
     }
 
-    // End of time measument
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
-
     if (rank == 0) {
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = end - start;
         std::cout << "Tiempo total de procesamiento (sin escritura): " << duration.count() << " segundos" << std::endl;
         std::string out_file = "bag_of_words_parallel.csv";
         write_bag_of_words(out_file, all_counts, global_vocabulary);
